@@ -111,11 +111,11 @@ struct param_s {
   { "",		0,		BAD	},	/* BAD type to end list */
 };
 
-#define NIL ((char *) NULL)		/* tell(fd, ..., NIL) */
+#define NIL ((char *) NULL)		/* tell_here(fd, ..., NIL) */
 
 int main(int argc, char *argv[]);
 int isdialstr(char *arg);
-void tell(int fd, ...);
+void tell_here(int fd, ...);
 void reader(int on);
 void shell(char *cmd);
 void lock_device(char *device);
@@ -136,7 +136,7 @@ char *argv[];
   for (i = 1; i < argc; ++i) {
 	if (argv[i][0] == '/') {
 		if (commdev != NULL) {
-			tell(2, "term: too many communication devices\n", NIL);
+			tell_here(2, "term: too many communication devices\n", NIL);
 			exit(1);
 		}
 		commdev = argv[i];
@@ -146,7 +146,7 @@ char *argv[];
 
   /* Save tty attributes of the terminal. */
   if (tcgetattr(0, &tcsavestdin) < 0) {
-	tell(2, "term: standard input is not a terminal\n", NIL);
+	tell_here(2, "term: standard input is not a terminal\n", NIL);
 	exit(1);
   }
 
@@ -154,13 +154,13 @@ char *argv[];
 
   commfd = open(commdev, O_RDWR);
   if (commfd < 0) {
-	tell(2, "term: can't open ", commdev, ": ", strerror(errno), "\n", NIL);
+	tell_here(2, "term: can't open ", commdev, ": ", strerror(errno), "\n", NIL);
 	quit(1);
   }
 
   /* Compute RAW modes of terminal and modem. */
   if (tcgetattr(commfd, &tccomm) < 0) {
-	tell(2, "term: ", commdev, " is not a terminal\n", NIL);
+	tell_here(2, "term: ", commdev, " is not a terminal\n", NIL);
 	quit(1);
   }
   signal(SIGINT, quit);
@@ -176,14 +176,14 @@ char *argv[];
   reader(1);
 
   /* Welcome message. */
-  tell(1, "Connected to ", commdev,
+  tell_here(1, "Connected to ", commdev,
 			", command key is CTRL-], type ^]? for help\r\n", NIL);
 
   /* Dial. */
   candial = 0;
   for (i = 1; i < argc; ++i) {
 	if (!isdialstr(argv[i])) continue;
-	tell(commfd, argv[i] + 1, "\r", NIL);
+	tell_here(commfd, argv[i] + 1, "\r", NIL);
 	candial = 1;
   }
 
@@ -212,7 +212,7 @@ char *argv[];
 			if (i < argc) break;
 
 			/* Unrecognized command, print list. */
-			tell(1, "\r\nTerm commands:\r\n",
+			tell_here(1, "\r\nTerm commands:\r\n",
 				" ? - this help\r\n",
 				candial ? " d - redial\r\n" : "",
 				" s - subshell (e.g. for file transfer)\r\n",
@@ -227,17 +227,17 @@ char *argv[];
 				if (arg[0] == '-' && arg[1] == 'c'
 							&& arg[2] != 0) {
 					cmd[1] = arg[2];
-					tell(1, cmd, arg+3, "\r\n", NIL);
+					tell_here(1, cmd, arg+3, "\r\n", NIL);
 				}
 			}
-			tell(1, "^] - send a CTRL-]\r\n\n",
+			tell_here(1, "^] - send a CTRL-]\r\n\n",
 				NIL);
 			break;
 		case 'd':
 			/* Redial by sending the dial commands again. */
 			for (i = 1; i < argc; ++i) {
 				if (!isdialstr(argv[i])) continue;
-				tell(commfd, argv[i] + 1, "\r", NIL);
+				tell_here(commfd, argv[i] + 1, "\r", NIL);
 			}
 			break;
 		case 's':
@@ -251,9 +251,9 @@ char *argv[];
 		case 'h':
 			/* Hangup by using the +++ escape and ATH command. */
 			sleep(2);
-			tell(commfd, "+++", NIL);
+			tell_here(commfd, "+++", NIL);
 			sleep(2);
-			tell(commfd, "ATH\r", NIL);
+			tell_here(commfd, "ATH\r", NIL);
 			break;
 		case 'b':
 			/* Send a break. */
@@ -271,7 +271,7 @@ char *argv[];
 		if (write(commfd, &key, 1) != 1) break;
 	}
   }
-  tell(2, "term: nothing to copy from input to ", commdev, "?\r\n", NIL);
+  tell_here(2, "term: nothing to copy from input to ", commdev, "?\r\n", NIL);
   quit(1);
 }
 
@@ -286,7 +286,7 @@ int isdialstr(char *arg)
 }
 
 
-void tell(int fd, ...)
+void tell_here(int fd, ...)
 {
 /* Write strings to file descriptor 'fd'. */
   va_list ap;
@@ -319,7 +319,7 @@ int on;
   /* Start a reader */
   pid = fork();
   if (pid < 0) {
-	tell(2, "term: fork() failed: ", strerror(errno), "\r\n", NIL);
+	tell_here(2, "term: fork() failed: ", strerror(errno), "\r\n", NIL);
 	quit(1);
   }
   if (pid == 0) {
@@ -329,7 +329,7 @@ int on;
 		m = 0;
 		while (m < n && (r = write(1, buf + m, n - m)) > 0) m += r;
 	}
-	tell(2, "term: nothing to copy from ", commdev, " to output?\r\n", NIL);
+	tell_here(2, "term: nothing to copy from ", commdev, " to output?\r\n", NIL);
 	kill(getppid(), SIGTERM);
 	_exit(1);
   }
@@ -350,7 +350,7 @@ void shell(char *cmd)
   void(*tsav) (int);
 
   if (cmd == NULL) {
-	tell(1, "\nExit the shell to return to term, ",
+	tell_here(1, "\nExit the shell to return to term, ",
 		commdev, " is open on file descriptor 9.\n", NIL);
   }
 
@@ -360,7 +360,7 @@ void shell(char *cmd)
   /* Start a shell */
   pid = fork();
   if (pid < 0) {
-	tell(2, "term: fork() failed: ", strerror(errno), "\n", NIL);
+	tell_here(2, "term: fork() failed: ", strerror(errno), "\n", NIL);
 	return;
   }
   if (pid == 0) {
@@ -375,7 +375,7 @@ void shell(char *cmd)
 	} else {
 		execl(shell, sh0, "-c", cmd, (char *) NULL);
 	}
-	tell(2, "term: can't execute ", shell, ": ", strerror(errno), "\n",NIL);
+	tell_here(2, "term: can't execute ", shell, ": ", strerror(errno), "\n",NIL);
 	_exit(1);
   }
   /* Wait for the shell to exit. */
@@ -386,7 +386,7 @@ void shell(char *cmd)
   (void) signal(SIGINT, isav);
   (void) signal(SIGQUIT, qsav);
   (void) signal(SIGTERM, tsav);
-  tell(1, "\n[back to term]\n", NIL);
+  tell_here(1, "\n[back to term]\n", NIL);
 }
 
 
@@ -404,7 +404,7 @@ char *device;
   if (stat(device, &stbuf) < 0) fatal(device);
 
   if (!S_ISCHR(stbuf.st_mode)) {
-	tell(2, "term: ", device, " is not a character device\n", NIL);
+	tell_here(2, "term: ", device, " is not a character device\n", NIL);
 	exit(1);
   }
 
@@ -440,13 +440,13 @@ char *device;
 		close(fd);
 		if (n == sizeof(pid) && !(kill(pid, 0) < 0 && errno == ESRCH)) {
 			/* It is locked by a running process. */
-			tell(2, "term: ", device,
+			tell_here(2, "term: ", device,
 				" is in use by another program\n", NIL);
 			if (getpgrp() == getpid()) sleep(3);
 			exit(1);
 		}
 		/* Stale lock. */
-		tell(1, "Removing stale lock ", lockfile, "\n", NIL);
+		tell_here(1, "Removing stale lock ", lockfile, "\n", NIL);
 		if (unlink(lockfile) < 0 && errno != ENOENT) fatal(lockfile);
 	}
   }
@@ -459,7 +459,7 @@ char *device;
 
 void fatal(char *label)
 {
-  tell(2, "term: ", label, ": ", strerror(errno), "\n", NIL);
+  tell_here(2, "term: ", label, ": ", strerror(errno), "\n", NIL);
   exit(1);
 }
 
@@ -495,7 +495,7 @@ struct termios *tcp;
 	     ++param);
 	switch (param->type) {
 	    case BAD:
-		tell(2, "Invalid parameter: ", arg, "\n", NIL);
+		tell_here(2, "Invalid parameter: ", arg, "\n", NIL);
 		quit(1);
 		break;
 	    case BITS:
