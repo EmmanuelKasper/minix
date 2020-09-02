@@ -65,7 +65,7 @@
 
 #define CHUNK 1024		/* how much to read at once */
 
-char TERM_LINE[] = "/dev/modem";/* default serial port to use */
+char TERM_LINE[] = "/dev/modem1";/* default serial port to use */
 
 				/* device lock file */
 char lockfile[] = "/usr/spool/locks/LK.iii.jjj.kkk";
