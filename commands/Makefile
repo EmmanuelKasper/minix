@@ -2,7 +2,7 @@
 
 .include <bsd.own.mk>
 
-SUBDIR= banner basename term
+SUBDIR= banner basename term grep
 # SUBDIR=	add_route arp ash at backup banner basename btrace cal \
 # 	cawf cd cdprobe cpp \
 # 	chmod chown ci cleantmp cmp co \
