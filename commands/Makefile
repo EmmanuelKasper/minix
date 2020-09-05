@@ -2,7 +2,7 @@
 
 .include <bsd.own.mk>
 
-SUBDIR= banner ls grep term
+SUBDIR= banner grep ls term
 # SUBDIR=	add_route arp ash at awk \
 # 	backup badblocks banner basename \
 # 	btrace cal \
