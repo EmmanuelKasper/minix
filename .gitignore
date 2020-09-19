@@ -37,3 +37,7 @@ tools/image
 tools/kernel
 share/zoneinfo/builddir
 lib/libc/compat__*
+commands/banner/banner
+commands/grep/grep
+commands/ls/ls
+commands/term/term
