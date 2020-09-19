@@ -46,7 +46,6 @@
 #define FAILURE		2	/* exit code: syntax error or bad file name */
 
 /* Macros */
-#define _PROTOTYPE(function, params)    function params
 #define SET_FLAG(c)	(flags[(c)-'a'] = 1)
 #define FLAG(c)		(flags[(c)-'a'] != 0)
 
@@ -64,12 +63,12 @@ extern int optind;
 extern char *optarg;
 
 /* Internal interfaces */
-_PROTOTYPE(int main, (int argc, char **argv));
-_PROTOTYPE(static int match, (FILE *input, char *label, char *filename));
-_PROTOTYPE(static char *get_line, (FILE *input));
-_PROTOTYPE(static char *map_nocase, (char *line));
-_PROTOTYPE(void regerror , (const char *s ) );
-_PROTOTYPE(static void tov8, (char *v8pattern, char *pattern));
+int main (int argc, char **argv);
+static int match (FILE *input, char *label, char *filename);
+static char *get_line (FILE *input);
+static char *map_nocase (char *line);
+void regerror (const char *s );
+static void tov8 (char *v8pattern, char *pattern);
 
 int main(argc, argv)
 int argc;
